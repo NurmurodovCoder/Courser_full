@@ -7,6 +7,8 @@ from rest_framework.response import Response
 
 from rest_framework import viewsets, generics
 
+from .permission import IsOwnerAuthorOrReadOnly
+
 
 @api_view(['GET'])
 def homepage(request):
@@ -28,5 +30,7 @@ def homepage(request):
 class CourseView(viewsets.ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
+
+    permission_classes = IsOwnerAuthorOrReadOnly
 
 

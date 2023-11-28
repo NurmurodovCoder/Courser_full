@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import timezone, datetime
 
 
 class Category(models.Model):
@@ -36,6 +37,7 @@ class Lesson(models.Model):
     video_watch = models.IntegerField(default=0)
 
     view = models.BooleanField(default=False)
+
     # def watch_view(self, watch):
     #     self.video_watch += watch
 
@@ -69,3 +71,26 @@ class Course(models.Model):
     def __str__(self):
         return self.title
 
+
+class StudentPay(models.Model):
+    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    course = models.ManyToManyField(Course)
+
+
+class LessonViewHistory(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lesson_history')
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='lesson_history')
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='lesson_history')
+
+    view_time = models.IntegerField(default=0)
+
+    min_view = models.IntegerField(default=0)
+    max_view = models.IntegerField(default=0)
+
+    status = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        self.view_time += self.max_view - self.min_view
+        if self.view_time * 1.25 >= self.lesson.full_watch:
+            self.status = True
+        return super().save(*args, **kwargs)
